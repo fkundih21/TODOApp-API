@@ -1,13 +1,11 @@
 <?php
 
 use Illuminate\Http\Request;
+use App\Http\Controllers\TaskController;
 use Illuminate\Support\Facades\Route;
 
-//TODO
-//Add routes
 
 Route::middleware('api')->group(function () {
-    Route::get('/test', function () {
-        return response()->json(['message' => 'Test']);
-    });
+    //GET ALL TASKS
+    Route::get('/tasks', [TaskController::class, 'index']);
 });
