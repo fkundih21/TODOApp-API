@@ -7,43 +7,88 @@ use App\Models\Task;
 
 class TaskController
 {
-    /**
-     * Display a listing of the resource.
-     */
+
     public function index()
     {
         return response()->json(Task::all(), 200);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
-        //
+        echo($request);
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'time' => 'required|date',
+            'is_completed' => 'required|boolean',
+            'has_reminder' => 'required|boolean',
+            'user_id' => 'nullable|exists:users,id',
+        ]);
+
+        $task = Task::create([
+            'name' => $request->name,
+            'time' => $request->time,
+            'is_completed' => $request->is_completed,
+            'has_reminder' => $request->has_reminder,
+            'user_id' => $request->user_id,
+        ]);
+
+        return response()->json($task, 201);
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(string $id)
     {
-        //
+        $task = Task::find($id);
+        if (!$task) {
+            return response()->json(['message' => 'Task not found'], 404);
+        }
+        return response()->json($task, 200);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, string $id)
     {
-        //
+        $task = Task::find($id);
+        if (!$task) {
+            return response()->json(['message' => 'Task not found'], 404);
+        }
+
+        $request->validate([
+            'name' => 'nullable|string|max:255',
+            'time' => 'nullable|date',
+            'is_completed' => 'nullable|boolean',
+            'has_reminder' => 'nullable|boolean',
+            'user_id' => 'nullable|exists:users,id',
+        ]);
+
+        $task->update([
+            'name' => $request->name ?? $task->name,
+            'time' => $request->time ?? $task->time,
+            'is_completed' => $request->is_completed ?? $task->is_completed,
+            'has_reminder' => $request->has_reminder ?? $task->has_reminder,
+            'user_id' => $request->user_id ?? $task->user_id,
+        ]);
+
+        return response()->json($task, 200);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(string $id)
     {
-        //
+        $task = Task::find($id);
+        if (!$task) {
+            return response()->json(['message' => 'Task not found'], 404);
+        }
+
+        $task->delete();
+        return response()->json(['message' => 'Task deleted successfully'], 200);
+    }
+
+    public function getTasksByUser($userId)
+    {
+        $tasks = Task::where("user_id", $userId)->get();
+
+        if ($tasks->isEmpty()) {
+            return response()->json(['message' => 'This user has no tasks'], 404);
+        }
+
+        return response()->json($tasks, 200);
     }
 }
