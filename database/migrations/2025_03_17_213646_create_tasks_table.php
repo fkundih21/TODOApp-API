@@ -17,8 +17,7 @@ return new class extends Migration
             $table->dateTime('time');
             $table->boolean('is_completed')->default(false);
             $table->boolean('has_reminder')->default(false);
-            $table->unsignedBigInteger('user_id'); //FK User
-            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade'); // FK Constraint
+            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             $table->timestamps();
         });
     }

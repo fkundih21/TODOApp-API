@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Task;
+use Illuminate\Support\Facades\Gate;
 
 class TaskController
 {
@@ -13,69 +14,46 @@ class TaskController
         return response()->json(Task::all(), 200);
     }
 
+
+    public function show(Task $task)
+    {
+        Gate::authorize('modify', $task);
+        return response()->json($task, 200);
+    }
     public function store(Request $request)
     {
-        echo($request);
-        $request->validate([
+        $fields = $request->validate([
             'name' => 'required|string|max:255',
             'time' => 'required|date',
             'is_completed' => 'required|boolean',
             'has_reminder' => 'required|boolean',
-            'user_id' => 'nullable|exists:users,id',
         ]);
 
-        $task = Task::create([
-            'name' => $request->name,
-            'time' => $request->time,
-            'is_completed' => $request->is_completed,
-            'has_reminder' => $request->has_reminder,
-            'user_id' => $request->user_id,
-        ]);
+        $task = $request->user()->tasks()->create($fields);
 
         return response()->json($task, 201);
     }
 
-    public function show(string $id)
+    public function update(Request $request, Task $task)
     {
-        $task = Task::find($id);
-        if (!$task) {
-            return response()->json(['message' => 'Task not found'], 404);
-        }
-        return response()->json($task, 200);
-    }
+        Gate::authorize('modify', $task);
 
-    public function update(Request $request, string $id)
-    {
-        $task = Task::find($id);
-        if (!$task) {
-            return response()->json(['message' => 'Task not found'], 404);
-        }
 
-        $request->validate([
+        $fields = $request->validate([
             'name' => 'nullable|string|max:255',
             'time' => 'nullable|date',
             'is_completed' => 'nullable|boolean',
             'has_reminder' => 'nullable|boolean',
-            'user_id' => 'nullable|exists:users,id',
         ]);
 
-        $task->update([
-            'name' => $request->name ?? $task->name,
-            'time' => $request->time ?? $task->time,
-            'is_completed' => $request->is_completed ?? $task->is_completed,
-            'has_reminder' => $request->has_reminder ?? $task->has_reminder,
-            'user_id' => $request->user_id ?? $task->user_id,
-        ]);
+        $task->update($fields);
 
         return response()->json($task, 200);
     }
 
-    public function destroy(string $id)
+    public function destroy(Task $task)
     {
-        $task = Task::find($id);
-        if (!$task) {
-            return response()->json(['message' => 'Task not found'], 404);
-        }
+        Gate::authorize('modify', $task);
 
         $task->delete();
         return response()->json(['message' => 'Task deleted successfully'], 200);
