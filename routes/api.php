@@ -20,7 +20,7 @@ Route::middleware([
         //GET ALL TASKS
         Route::get('/tasks', [TaskController::class, 'index']);
         //GET ALL TASKS BY SPECIFIC USER
-        Route::get('/users/{user_id}/tasks', [TaskController::class, 'getTasksByUser']);
+        Route::get('/user', [TaskController::class, 'getTasksByUser']);
         //GET TASK BY ID
         Route::get('/tasks/{task}', [TaskController::class, 'show']);
         //POST NEW TASK

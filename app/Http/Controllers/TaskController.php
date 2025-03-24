@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Task;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Auth;
 
 class TaskController
 {
@@ -59,14 +60,18 @@ class TaskController
         return response()->json(['message' => 'Task deleted successfully'], 200);
     }
 
-    public function getTasksByUser($userId)
+    public function getTasksByUser()
     {
-        $tasks = Task::where("user_id", $userId)->get();
-
-        if ($tasks->isEmpty()) {
-            return response()->json(['message' => 'This user has no tasks'], 404);
+        if (!Auth::check()) {
+            return response()->json(['message' => 'Unauthorized'], 401);
         }
-
+    
+        $tasks = Task::where("user_id", Auth::id())->get();
+    
+        if ($tasks->isEmpty()) {
+            return response()->json([], 200);
+        }
+    
         return response()->json($tasks, 200);
     }
 }
